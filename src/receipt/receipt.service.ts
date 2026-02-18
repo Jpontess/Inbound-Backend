@@ -5,16 +5,28 @@ import { Receipt, ReceiptDocument } from "./Schemas/receipt.schema";
 import { CreateReceiptDto } from "./ReceiptDTO/createReceipt.dto";
 import { UpdateReceiptDto } from "./ReceiptDTO/updateReceipt.dto";
 import { FinishReceipt } from "./ReceiptDTO/finishReceipt.dto";
+import { Supplier, SupplierDocument } from "src/supplier/Schemas/suppliers.schema";
+import { Usuario, UsuarioDocument } from "src/users/Schemas/usuario.schema";
 
 @Injectable()
 export class ReceiptService {
-    constructor(@InjectModel(Receipt.name) private model: Model<ReceiptDocument>){}
+    constructor(@InjectModel(Receipt.name) private model: Model<ReceiptDocument>,
+    @InjectModel(Supplier.name) private modelSupplier: Model<SupplierDocument>,
+    @InjectModel(Usuario.name) private modelUsuario: Model<UsuarioDocument>
+    ){}
 
 
-    // cria recebimento portaria
-    createReceipt( newReceiptDto: CreateReceiptDto){
+    // cria recebimento
+   async createReceipt(newReceiptDto: CreateReceiptDto){ 
+      const dadosFornecedor = await this.modelSupplier.findById(newReceiptDto.fornecedor)
+      const dadosUsuario = await this.modelUsuario.findById(newReceiptDto.usuario)
+        
+      console.log(dadosFornecedor)
         const newReceipt = new this.model({
-            ...newReceiptDto, // pego todas as props to DTO
+            ...newReceiptDto,
+            fornecedor: newReceiptDto.fornecedor,
+            nomeUsuario: dadosUsuario?.nome,
+            nomeFornecedor: dadosFornecedor?.nome,
             dataChegada: new Date(),
             status: "Aguardando"
         })

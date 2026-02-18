@@ -10,9 +10,15 @@ export class Receipt {
     
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: false })
     fornecedor?: Supplier; 
+    
+    @Prop()
+    nomeFornecedor?:string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
     usuario?: Usuario; 
+
+    @Prop()
+    nomeUsuario?:string
 
     @Prop({ required: false, uppercase: true })
     placa?: string;

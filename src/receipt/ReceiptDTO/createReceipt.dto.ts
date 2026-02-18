@@ -5,14 +5,18 @@ export class CreateReceiptDto {
     @IsNotEmpty()
     @IsMongoId()
     fornecedor!: Supplier
+    
+    @IsString()
+    nomeFornecedor!:string
 
     @IsNotEmpty()
     @IsMongoId()
-    usuario!: string
+    usuario?: string
+    nomeUsuario?:string
     
     @IsOptional()    
     @IsString()
-    placa?: string 
+    placa!: string 
 }
 
 
