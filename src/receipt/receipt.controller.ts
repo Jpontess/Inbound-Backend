@@ -1,46 +1,74 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
-import { ReceiptService } from "./receipt.service";
-import { CreateReceiptDto } from "./ReceiptDTO/createReceipt.dto";
-import { UpdateReceiptDto } from "./ReceiptDTO/updateReceipt.dto";
-import { FinishReceipt } from "./ReceiptDTO/finishReceipt.dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 
-@Controller("receipt")
-export class ReceiptController{
-    constructor(private service: ReceiptService ){}
+import { ReceiptService } from './receipt.service';
+import { CreateReceiptDto } from './dto/createReceipt.dto';
+import { UpdateReceiptDto } from './dto/updateReceipt.dto';
+import { FinishReceipt } from './dto/finishReceipt.dto';
+import { startReceiptDto } from './dto/startReceipt.dto';
 
-    @Post()
-    create(@Body() newReceipt: CreateReceiptDto){
-        return this.service.createReceipt(newReceipt)
-    }
+@Controller('receipt')
+export class ReceiptController {
+  constructor(private service: ReceiptService) {}
 
-    @Get()
-    async listReceipt(){
-        return await this.service.listReceipt()
-    }
+  @Post()
+  create(@Body() newReceipt: CreateReceiptDto) {
+    return this.service.createReceipt(newReceipt);
+  }
 
-    @Get(":id")
-    async receiptById(@Param("id") id: string){
-        return await this.service.receiptById(id)
-    }
+  @Post('schedule')
+  createSchedule(@Body() newSchedule: CreateReceiptDto) {
+    return this.service.createSchedule(newSchedule);
+  }
 
-    @Patch(":id")
-    async updateReceipt(@Param("id") id: string, @Body() updateNew: CreateReceiptDto){
-        return await this.service.updateReceipt(id, updateNew)
-    }
+  @Get()
+  async listReceipt() {
+    return await this.service.listReceipt();
+  }
 
-    @Delete(":id")
-    async deleteReceipt(@Param("id") id: string){
-        return await this.service.deleteReceipt(id);
-    }
+  @Get(':id')
+  async receiptById(@Param('id') id: string) {
+    return await this.service.receiptById(id);
+  }
 
-    @Post(":id")
-    async startReceipt(@Param("id") id: string, @Body() receipt : UpdateReceiptDto ) {
-        return await this.service.startReceipt(id, receipt.pesoNota!, receipt.notaFiscal!)
-    }
+  @Patch(':id')
+  async updateReceipt(
+    @Param('id') id: string,
+    @Body() updateNew: UpdateReceiptDto,
+  ) {
+    return await this.service.updateReceipt(id, updateNew);
+  }
 
-    // finalizar Recebimento
-    @Post("finish/:id")
-    async finishReceipt(@Param("id")id : string, @Body() receipt: FinishReceipt) {
-        return await this.service.finishReceipt(id, receipt)
-    }
+  @Delete(':id')
+  async deleteReceipt(@Param('id') id: string) {
+    return await this.service.deleteReceipt(id);
+  }
+
+  @Post(':id')
+  async startReceipt(
+    @Param('id') id: string,
+    @Body() receipt: startReceiptDto,
+  ) {
+    return await this.service.startReceipt(id, receipt);
+  }
+
+  @Post('finish/:id')
+  async finishReceipt(@Param('id') id: string, @Body() receipt: FinishReceipt) {
+    return await this.service.finishReceipt(id, receipt);
+  }
+
+  @Patch(':id/input')
+  async inputByPlate(
+    @Param('id') id: string,
+    @Body() updateReceipt: UpdateReceiptDto,
+  ) {
+    return await this.service.inputByPlate(id, updateReceipt);
+  }
 }

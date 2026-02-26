@@ -1,16 +1,18 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
-export type SupplierDocument = HydratedDocument<Supplier>
+export type SupplierDocument = HydratedDocument<Supplier>;
 
-@Schema({timestamps: true})
+@Schema({
+  timestamps: true,
+  collection: 'inbound_manager_suppliers',
+})
 export class Supplier {
-    @Prop({required: true})
-    nome!: string
+  @Prop({ required: true })
+  name!: string;
 
-    @Prop({required: false})
-    status!: boolean
-
+  @Prop({ required: false })
+  status!: boolean;
 }
 
-export const SupplierSchema = SchemaFactory.createForClass(Supplier)
+export const SupplierSchema = SchemaFactory.createForClass(Supplier);

@@ -1,64 +1,66 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { HydratedDocument } from "mongoose";
-import { Supplier } from "src/supplier/Schemas/suppliers.schema";
-import { Usuario } from "src/users/Schemas/usuario.schema";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Supplier } from 'src/supplier/Schemas/suppliers.schema';
 
-export type ReceiptDocument = HydratedDocument<Receipt>
+export type ReceiptDocument = HydratedDocument<Receipt>;
 
-@Schema({ timestamps: true }) 
+@Schema({
+  timestamps: true,
+  collection: 'inbound_manager_receivings',
+})
 export class Receipt {
-    
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: false })
-    fornecedor?: Supplier; 
-    
-    @Prop()
-    nomeFornecedor?:string
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Supplier',
+    required: false,
+  })
+  supplier_Id?: Supplier;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
-    usuario?: Usuario; 
+  @Prop({ required: false })
+  supplierName?: string;
 
-    @Prop()
-    nomeUsuario?:string
+  @Prop({ required: false, uppercase: true })
+  licensePlate?: string;
 
-    @Prop({ required: false, uppercase: true })
-    placa?: string;
+  @Prop({ required: false })
+  invoiceNumber?: string; // numeroNota
 
-    @Prop({ required: false })
-    notaFiscal?: string;
-    
-    @Prop({ required: false })
-    pesoNota?: number;  
+  @Prop({ required: false })
+  invoiceWeight?: number; // pesoNota
 
-    @Prop({ required: false })
-    pesoBalanca?: number; 
-    
-    @Prop({ required: false })
-    obs?: string;
+  @Prop({ required: false })
+  scaleWeight?: number; // pesoBalança
 
-    @Prop({ required: false })
-    dataChegada?: Date; 
+  @Prop({ required: false })
+  notes?: string; // observações
 
-    @Prop({ required: false })
-    dataInicio?: Date; 
+  @Prop({ required: false })
+  schedulingDate?: Date; // dataAgendamento
 
-    @Prop({ required: false })
-    dataFim?: Date; 
+  @Prop({ required: false })
+  arrivalDate?: Date; // dataChegada
 
-    @Prop({ required: false }) 
-    tempoEsperaMin?: number; // (inicio - chegada)
+  @Prop({ required: false })
+  startDate?: Date; // dataInicio
 
-    @Prop({ required: false })
-    tempoExecucaoMin?: number; // (fim - inicio)
+  @Prop({ required: false })
+  endDate?: Date; // dataFim
 
-    @Prop({ required: false })
-    tempoPermanenciaMin?: number; // (fim - chegada)
+  @Prop({ required: false })
+  waitTimeMin?: number; // tempoEsperaMin
 
-    @Prop({ 
-        required: true, 
-        enum: ["Agendado", "Aguardando", "Conferindo", "Finalizado", "Divergencia"],
-        default: "Aguardando"
-    })
-    status!: string;
+  @Prop({ required: false })
+  executionTimeMin?: number; // tempoExecucaoMin
+
+  @Prop({ required: false })
+  stayTimeMin?: number; // tempoPermanenciaMin
+
+  @Prop({
+    required: true,
+    enum: ['Scheduled', 'Waiting', 'Checking', 'Finished', 'Divergence'],
+    default: 'Waiting',
+  })
+  status!: string;
 }
 
 export const ReceiptSchema = SchemaFactory.createForClass(Receipt);

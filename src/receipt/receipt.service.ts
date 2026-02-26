@@ -1,105 +1,145 @@
-import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Receipt, ReceiptDocument } from "./Schemas/receipt.schema";
-import { CreateReceiptDto } from "./ReceiptDTO/createReceipt.dto";
-import { UpdateReceiptDto } from "./ReceiptDTO/updateReceipt.dto";
-import { FinishReceipt } from "./ReceiptDTO/finishReceipt.dto";
-import { Supplier, SupplierDocument } from "src/supplier/Schemas/suppliers.schema";
-import { Usuario, UsuarioDocument } from "src/users/Schemas/usuario.schema";
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Receipt, ReceiptDocument } from './Schemas/receipt.schema';
+import { CreateReceiptDto } from './dto/createReceipt.dto';
+import { FinishReceipt } from './dto/finishReceipt.dto';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/Schemas/suppliers.schema';
+import { UpdateReceiptDto } from './dto/updateReceipt.dto';
+import { startReceiptDto } from './dto/startReceipt.dto';
 
 @Injectable()
 export class ReceiptService {
-    constructor(@InjectModel(Receipt.name) private model: Model<ReceiptDocument>,
+  constructor(
+    @InjectModel(Receipt.name) private model: Model<ReceiptDocument>,
     @InjectModel(Supplier.name) private modelSupplier: Model<SupplierDocument>,
-    @InjectModel(Usuario.name) private modelUsuario: Model<UsuarioDocument>
-    ){}
+  ) {}
 
+  async createReceipt(newReceiptDto: CreateReceiptDto) {
+    const supplier = await this.modelSupplier.findById(
+      newReceiptDto.fornecedor,
+    ); // id do fornecedor
 
-    // cria recebimento
-   async createReceipt(newReceiptDto: CreateReceiptDto){ 
-      const dadosFornecedor = await this.modelSupplier.findById(newReceiptDto.fornecedor)
-      const dadosUsuario = await this.modelUsuario.findById(newReceiptDto.usuario)
-        
-      console.log(dadosFornecedor)
-        const newReceipt = new this.model({
-            ...newReceiptDto,
-            fornecedor: newReceiptDto.fornecedor,
-            nomeUsuario: dadosUsuario?.nome,
-            nomeFornecedor: dadosFornecedor?.nome,
-            dataChegada: new Date(),
-            status: "Aguardando"
-        })
-        return newReceipt.save()
+    const newReceipt = new this.model({
+      placa: newReceiptDto.placa,
+      supplier_Id: newReceiptDto.fornecedor,
+      nomeFornecedor: supplier?.name,
+      dataChegada: new Date(),
+      status: 'Aguardando',
+    });
+    return newReceipt.save();
+  }
+
+  async createSchedule(newScheduleDto: CreateReceiptDto) {
+    const supplier = await this.modelSupplier.findById(
+      newScheduleDto.fornecedor,
+    ); // id do fornecedor
+
+    const newSchedule = new this.model({
+      fornecedor: newScheduleDto.fornecedor,
+      nomeFornecedor: supplier?.name,
+      pesoNota: newScheduleDto.pesoNota,
+      dataAgendamento: newScheduleDto.dataAgendamento,
+      status: 'Agendado',
+    });
+    return newSchedule.save();
+  }
+
+  // lista de recebimento
+  async listReceipt() {
+    return await this.model.find();
+  }
+
+  // recebimento por Id
+  async receiptById(id: string) {
+    return await this.model.findById(id);
+  }
+
+  // atualiza o recebimento
+  async updateReceipt(id: string, newUpdate: UpdateReceiptDto) {
+    return await this.model.findByIdAndUpdate(id, newUpdate, { new: true });
+  }
+
+  // deleta o recebimento
+  async deleteReceipt(id: string) {
+    return await this.model.findByIdAndDelete(id);
+  }
+
+  async startReceipt(id: string, startReceiptDto: startReceiptDto) {
+    const receiptDb = await this.model.findById(id);
+
+    const inicioRecebimento = new Date().getTime();
+    const tempoChegada = receiptDb?.startDate
+      ? new Date(receiptDb.startDate).getTime()
+      : 0;
+
+    const tempoEspera =
+      inicioRecebimento > 0
+        ? Math.floor((inicioRecebimento - tempoChegada) / 60000)
+        : 0;
+
+    return await this.model.findByIdAndUpdate(
+      id,
+      {
+        ...startReceiptDto,
+        status: 'Conferindo',
+        dataInicio: inicioRecebimento,
+        tempoEsperaMin: tempoEspera,
+      },
+      { new: true },
+    );
+  }
+
+  // finaliza um recebimento
+  async finishReceipt(id: string, receipt: FinishReceipt) {
+    const receiptDb = await this.model.findById(id);
+
+    const recebimentoFim = new Date();
+
+    // passando as props date para getTime()
+    const chegadaTempo = receiptDb?.startDate
+      ? new Date(receiptDb.startDate).getTime()
+      : 0;
+    const inicioTempo = receiptDb?.startDate
+      ? new Date(receiptDb.startDate).getTime()
+      : 0;
+    const finalTempo = recebimentoFim.getTime();
+
+    const tempoPermanencia =
+      chegadaTempo > 0 ? Math.floor((finalTempo - chegadaTempo) / 60000) : 0;
+    const tempoExecucao =
+      inicioTempo > 0 ? Math.floor((finalTempo - inicioTempo) / 60000) : 0;
+
+    let statusReceipt = receipt.status;
+    const pesoNota = receiptDb?.invoiceWeight;
+
+    if (receipt.scaleWeight >= pesoNota!) {
+      statusReceipt = 'Finalizado';
+    } else {
+      statusReceipt = 'Divergencia';
     }
 
-    // lista de recebimento
-    async listReceipt(){
-        return await this.model.find()
-    }
+    return await this.model.findByIdAndUpdate(
+      id,
+      {
+        ...receipt,
+        status: statusReceipt,
+        dataFim: recebimentoFim,
+        tempoExecucaoMin: tempoExecucao,
+        tempoPermanenciaMin: tempoPermanencia,
+      },
+      { new: true },
+    );
+  }
 
-    // recebimento por Id
-    async receiptById(id : string){
-        return await this.model.findById(id)
-    }
-
-    // atualiza o recebimento
-    async updateReceipt(id: string, newUpdate: CreateReceiptDto){
-        return await this.model.findByIdAndUpdate(id, newUpdate, {new: true})
-    }
-
-    // deleta o recebimento
-    async deleteReceipt(id : string){
-        return await this.model.findByIdAndDelete(id)
-    }
-
-    async startReceipt(id: string, pesoNotaDto: number, numNf: string) {
-       const receiptDb = await this.model.findById(id)
-
-       const inicioRecebimento = new Date().getTime()
-       const tempoChegada = receiptDb?.dataChegada ? new Date(receiptDb.dataChegada).getTime() : 0
-
-       const tempoEspera = inicioRecebimento > 0 ? Math.floor((inicioRecebimento - tempoChegada) / 60000): 0
-       
-        return await this.model.findByIdAndUpdate(id, {
-            pesoNota: pesoNotaDto,
-            notaFiscal: numNf,
-            status: "Conferindo",
-            dataInicio: inicioRecebimento,
-            tempoEsperaMin: tempoEspera
-        }, {new: true})
-    }
-
-    // finaliza um recebimento
-    async finishReceipt(id : string, receipt: FinishReceipt){
-        const receiptDb = await this.model.findById(id)
-
-        const recebimentoFim = new Date()
-
-        // passando as props date para getTime()
-        const chegadaTempo = receiptDb?.dataChegada ? new Date(receiptDb.dataChegada).getTime() : 0
-        const inicioTempo = receiptDb?.dataInicio ? new Date(receiptDb.dataInicio).getTime() : 0
-        const finalTempo = recebimentoFim.getTime()
-
-        const tempoPermanencia = chegadaTempo > 0 ? Math.floor((finalTempo - chegadaTempo) / 60000) : 0;
-        const tempoExecucao = inicioTempo > 0 ? Math.floor((finalTempo - inicioTempo) / 60000) : 0;
-
-        let statusReceipt = receipt.status
-        const pesoNota = receiptDb?.pesoNota
-
-        if(receipt.pesoBalanca >= pesoNota!){
-            statusReceipt = "Finalizado"
-        }else{
-            statusReceipt = "Divergencia"
-        }
-
-        return await this.model.findByIdAndUpdate(id, {
-            ...receipt,
-            status: statusReceipt,
-            dataFim: recebimentoFim,
-            tempoExecucaoMin: tempoExecucao,
-            tempoPermanenciaMin: tempoPermanencia
-        }, {new: true})
-
-    }
+  async inputByPlate(id: string, updateReceipt: UpdateReceiptDto) {
+    return await this.model.findByIdAndUpdate(
+      id,
+      { ...updateReceipt, status: 'Aguardando', dataChegada: new Date() },
+      { new: true },
+    );
+  }
 }
