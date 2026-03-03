@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SupplierModule } from './supplier/supplier.module';
 import { ReceiptModule } from './receipt/receipt.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
-
+    AuthModule,
     SupplierModule,
     ReceiptModule,
   ],

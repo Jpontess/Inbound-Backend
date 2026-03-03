@@ -20,14 +20,15 @@ export class ReceiptService {
 
   async createReceipt(newReceiptDto: CreateReceiptDto) {
     const supplier = await this.modelSupplier.findById(
-      newReceiptDto.fornecedor,
-    ); // id do fornecedor
+      newReceiptDto.supplier_Id,
+    );
 
     const newReceipt = new this.model({
-      placa: newReceiptDto.placa,
-      supplier_Id: newReceiptDto.fornecedor,
-      nomeFornecedor: supplier?.name,
-      dataChegada: new Date(),
+      ...newReceiptDto,
+      licensePlate: newReceiptDto.licensePlate,
+      supplier_Id: newReceiptDto.supplier_Id,
+      supplierName: supplier?.name,
+      arrivalDate: new Date(),
       status: 'Aguardando',
     });
     return newReceipt.save();
@@ -35,20 +36,19 @@ export class ReceiptService {
 
   async createSchedule(newScheduleDto: CreateReceiptDto) {
     const supplier = await this.modelSupplier.findById(
-      newScheduleDto.fornecedor,
-    ); // id do fornecedor
+      newScheduleDto.supplier_Id,
+    );
 
     const newSchedule = new this.model({
-      fornecedor: newScheduleDto.fornecedor,
-      nomeFornecedor: supplier?.name,
-      pesoNota: newScheduleDto.pesoNota,
-      dataAgendamento: newScheduleDto.dataAgendamento,
+      supplier_Id: newScheduleDto.supplier_Id,
+      supplierName: supplier?.name,
+      invoiceNumber: newScheduleDto.invoiceWeight,
+      schedulingDate: newScheduleDto.schedulingDate,
       status: 'Agendado',
     });
     return newSchedule.save();
   }
 
-  // lista de recebimento
   async listReceipt() {
     return await this.model.find();
   }
@@ -72,8 +72,8 @@ export class ReceiptService {
     const receiptDb = await this.model.findById(id);
 
     const inicioRecebimento = new Date().getTime();
-    const tempoChegada = receiptDb?.startDate
-      ? new Date(receiptDb.startDate).getTime()
+    const tempoChegada = receiptDb?.arrivalDate
+      ? new Date(receiptDb.arrivalDate).getTime()
       : 0;
 
     const tempoEspera =
@@ -86,8 +86,8 @@ export class ReceiptService {
       {
         ...startReceiptDto,
         status: 'Conferindo',
-        dataInicio: inicioRecebimento,
-        tempoEsperaMin: tempoEspera,
+        startDate: inicioRecebimento,
+        waitTimeMin: tempoEspera,
       },
       { new: true },
     );
@@ -100,18 +100,18 @@ export class ReceiptService {
     const recebimentoFim = new Date();
 
     // passando as props date para getTime()
-    const chegadaTempo = receiptDb?.startDate
+    const timeArrival = receiptDb?.arrivalDate
+      ? new Date(receiptDb.arrivalDate).getTime()
+      : 0;
+    const timeStart = receiptDb?.startDate
       ? new Date(receiptDb.startDate).getTime()
       : 0;
-    const inicioTempo = receiptDb?.startDate
-      ? new Date(receiptDb.startDate).getTime()
-      : 0;
-    const finalTempo = recebimentoFim.getTime();
+    const timeEnd = recebimentoFim.getTime();
 
-    const tempoPermanencia =
-      chegadaTempo > 0 ? Math.floor((finalTempo - chegadaTempo) / 60000) : 0;
-    const tempoExecucao =
-      inicioTempo > 0 ? Math.floor((finalTempo - inicioTempo) / 60000) : 0;
+    const permanenceTime =
+      timeArrival > 0 ? Math.floor((timeEnd - timeArrival) / 60000) : 0;
+    const executionTime =
+      timeStart > 0 ? Math.floor((timeEnd - timeStart) / 60000) : 0;
 
     let statusReceipt = receipt.status;
     const pesoNota = receiptDb?.invoiceWeight;
@@ -122,23 +122,25 @@ export class ReceiptService {
       statusReceipt = 'Divergencia';
     }
 
-    return await this.model.findByIdAndUpdate(
-      id,
-      {
-        ...receipt,
-        status: statusReceipt,
-        dataFim: recebimentoFim,
-        tempoExecucaoMin: tempoExecucao,
-        tempoPermanenciaMin: tempoPermanencia,
-      },
-      { new: true },
-    );
+    return await this.model
+      .findByIdAndUpdate(
+        id,
+        {
+          ...receipt,
+          status: statusReceipt,
+          endDate: recebimentoFim,
+          executionTimeMin: executionTime,
+          stayTimeMin: permanenceTime,
+        },
+        { new: true },
+      )
+      .select('-createdAt -updatedAt -__v');
   }
 
   async inputByPlate(id: string, updateReceipt: UpdateReceiptDto) {
     return await this.model.findByIdAndUpdate(
       id,
-      { ...updateReceipt, status: 'Aguardando', dataChegada: new Date() },
+      { ...updateReceipt, status: 'Aguardando', arrivalDate: new Date() },
       { new: true },
     );
   }

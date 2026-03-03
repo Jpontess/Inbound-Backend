@@ -42,7 +42,7 @@ export class SupplierService {
     };
   }
 
-  async deleteSupllier(id: string) {
+  async deleteSupplier(id: string) {
     const deletedSupplier = await this.model.findByIdAndDelete(id);
     if (!deletedSupplier) {
       throw new Error('Erro ao deletar fornecedor');

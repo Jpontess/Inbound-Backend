@@ -34,7 +34,7 @@ export class UpdateReceiptDto {
   Obs?: string;
 
   @IsOptional()
-  dataAgendamento: string;
+  dataAgendamento?: string;
 
   @IsOptional()
   dataChegada?: Date;

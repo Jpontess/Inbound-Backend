@@ -3,9 +3,9 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class startReceiptDto {
   @IsNotEmpty()
   @IsString()
-  notaFiscal!: string;
+  invoiceNumber!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  pesoNota!: number;
+  invoiceWeight!: number;
 }

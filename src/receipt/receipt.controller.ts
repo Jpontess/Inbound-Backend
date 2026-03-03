@@ -51,7 +51,7 @@ export class ReceiptController {
     return await this.service.deleteReceipt(id);
   }
 
-  @Post(':id')
+  @Post(':id/start')
   async startReceipt(
     @Param('id') id: string,
     @Body() receipt: startReceiptDto,
@@ -59,7 +59,7 @@ export class ReceiptController {
     return await this.service.startReceipt(id, receipt);
   }
 
-  @Post('finish/:id')
+  @Post(':id/finish')
   async finishReceipt(@Param('id') id: string, @Body() receipt: FinishReceipt) {
     return await this.service.finishReceipt(id, receipt);
   }

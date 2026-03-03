@@ -40,6 +40,6 @@ export class SupplierController {
 
   @Delete('delete/:id')
   async deleteSupplier(@Param('id') id: string) {
-    return await this.supllierService.deleteSupllier(id);
+    return await this.supllierService.deleteSupplier(id);
   }
 }

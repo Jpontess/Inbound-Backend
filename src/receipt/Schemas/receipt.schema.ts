@@ -20,7 +20,7 @@ export class Receipt {
   supplierName?: string;
 
   @Prop({ required: false, uppercase: true })
-  licensePlate?: string;
+  licensePlate?: string; // placa
 
   @Prop({ required: false })
   invoiceNumber?: string; // numeroNota
@@ -57,8 +57,8 @@ export class Receipt {
 
   @Prop({
     required: true,
-    enum: ['Scheduled', 'Waiting', 'Checking', 'Finished', 'Divergence'],
-    default: 'Waiting',
+    enum: ['Agendado', 'Aguardando', 'Conferindo', 'Finalizado', 'Divergencia'],
+    default: 'Aguardando',
   })
   status!: string;
 }
