@@ -8,4 +8,8 @@ export class startReceiptDto {
   @IsNumber()
   @IsNotEmpty()
   invoiceWeight!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  UserName!: string;
 }

@@ -19,6 +19,9 @@ export class Receipt {
   @Prop({ required: false })
   supplierName?: string;
 
+  @Prop({ required: false })
+  UserName?: string;
+
   @Prop({ required: false, uppercase: true })
   licensePlate?: string; // placa
 
