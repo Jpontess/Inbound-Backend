@@ -7,4 +7,4 @@ import { S3Service } from './services/s3.service';
   providers: [AuthenticationGuard, JWTValidator, S3Service],
   exports: [JWTValidator],
 })
-export class AuthModule {}
+export class CommonAuthModule {}

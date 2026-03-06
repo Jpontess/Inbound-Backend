@@ -3,14 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AuthModule } from './common/auth/auth.module';
+import { CommonAuthModule } from './common/auth/auth.module';
 import { AuthenticationGuard } from './common/auth/guards/authentication.guard';
 import { ReceiptModule } from './receipt/receipt.module';
 import { SupplierModule } from './supplier/supplier.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -21,6 +21,7 @@ import { SupplierModule } from './supplier/supplier.module';
       }),
       inject: [ConfigService],
     }),
+    CommonAuthModule,
     AuthModule,
     SupplierModule,
     ReceiptModule,
