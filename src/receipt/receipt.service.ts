@@ -42,7 +42,7 @@ export class ReceiptService {
     const newSchedule = new this.model({
       supplier_Id: newScheduleDto.supplier_Id,
       supplierName: supplier?.name,
-      invoiceNumber: newScheduleDto.invoiceWeight,
+      invoiceWeight: newScheduleDto.invoiceWeight,
       schedulingDate: newScheduleDto.schedulingDate,
       status: 'Agendado',
     });
