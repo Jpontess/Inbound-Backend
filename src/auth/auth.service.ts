@@ -13,7 +13,7 @@ export class AuthService {
   async singIn(email: string, password: string) {
     const response = await firstValueFrom(
       this.httpService.post<LoginResponse>(
-        'https://auth-service-staging.livup-staging.com/api/auth/email/signin',
+        process.env.AUTH_STAGING as string,
         { email, password },
         { headers: { 'Content-Type': 'application/json' } },
       ),
