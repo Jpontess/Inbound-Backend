@@ -12,7 +12,10 @@ export class SupplierService {
   ) {}
 
   createSupplier(supplierCreate: createSupplierDTO) {
-    const newSupplier = new this.model({ ...supplierCreate, status: true });
+    const newSupplier = new this.model({
+      ...supplierCreate,
+      supplier_status: true,
+    });
     if (!newSupplier) {
       throw new Error('Erro ao criar fornecedor');
     }
@@ -38,17 +41,20 @@ export class SupplierService {
       throw new Error('Erro ao atualizar fornecedor');
     }
     return {
-      message: `O fornecedor ${updatedSupplier.name} foi atualizado com sucesso!`,
+      message: `Fornecedor atualizado com sucesso!`,
     };
   }
 
   async deleteSupplier(id: string) {
-    const deletedSupplier = await this.model.findByIdAndDelete(id);
-    if (!deletedSupplier) {
+    const deletedSupplier = await this.model.findById(id);
+    if (deletedSupplier === null) {
       throw new Error('Erro ao deletar fornecedor');
     }
+    deletedSupplier.supplier_status = false;
+    await deletedSupplier.save();
+
     return {
-      message: `O fornecedor ${deletedSupplier.name} foi deletado com sucesso!`,
+      message: `O fornecedor ${deletedSupplier.supplier_name} foi deletado com sucesso!`,
     };
   }
 }
