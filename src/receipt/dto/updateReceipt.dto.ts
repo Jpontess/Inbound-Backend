@@ -10,49 +10,49 @@ import { Supplier } from 'src/supplier/Schemas/suppliers.schema';
 export class UpdateReceiptDto {
   @IsOptional()
   @IsMongoId()
-  fornecedor?: Supplier;
+  supplier_id?: Supplier;
 
   @IsOptional()
   @IsString()
-  placa?: string;
+  license_plate?: string;
 
   @IsOptional()
   @IsString()
-  notaFiscal?: string;
+  invoice_number?: string;
 
   @IsNumber()
   @IsOptional()
-  pesoNota?: number;
+  invoice_weight?: number;
 
   @IsOptional()
   @IsNotEmpty()
   @IsNumber()
-  pesoBalanca?: number;
+  scale_weight?: number;
 
   @IsString()
   @IsOptional()
-  Obs?: string;
+  notes?: string;
 
   @IsOptional()
-  dataAgendamento?: string;
+  scheduling_date?: string;
 
   @IsOptional()
-  dataChegada?: Date;
+  arrival_date?: Date;
 
   @IsOptional()
-  dataFim?: Date;
+  end_date?: Date;
 
   @IsOptional()
-  dataInicio?: Date;
+  start_date?: Date;
 
   @IsOptional()
-  tempoEsperaMin?: number;
+  wait_time_min?: number;
 
   @IsOptional()
-  tempoExecusaoMin?: number;
+  execution_time_min?: number;
 
   @IsOptional()
-  tempoPemanenciaMin?: number;
+  stay_time_min?: number;
 
   @IsString()
   @IsOptional()
