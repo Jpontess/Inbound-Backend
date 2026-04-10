@@ -3,13 +3,13 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class startReceiptDto {
   @IsNotEmpty()
   @IsString()
-  invoiceNumber!: string;
+  invoice_number!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  invoiceWeight!: number;
+  invoice_weight!: number;
 
   @IsString()
   @IsNotEmpty()
-  UserName!: string;
+  user_name!: string;
 }

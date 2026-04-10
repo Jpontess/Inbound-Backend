@@ -14,49 +14,49 @@ export class Receipt {
     ref: 'Supplier',
     required: false,
   })
-  supplier_Id?: Supplier;
+  supplier_id?: Supplier;
 
   @Prop({ required: false })
-  supplierName?: string;
+  supplier_name?: string;
 
   @Prop({ required: false })
-  UserName?: string;
+  user_name?: string;
 
   @Prop({ required: false, uppercase: true })
-  licensePlate?: string; // placa
+  license_plate?: string; // placa
 
   @Prop({ required: false })
-  invoiceNumber?: string; // numeroNota
+  invoice_number?: string; // numeroNota
 
   @Prop({ required: false })
-  invoiceWeight?: number; // pesoNota
+  invoice_weight?: number; // pesoNota
 
   @Prop({ required: false })
-  scaleWeight?: number; // pesoBalança
+  scale_weight?: number; // pesoBalança
 
   @Prop({ required: false })
   notes?: string; // observações
 
   @Prop({ required: false })
-  schedulingDate?: Date; // dataAgendamento
+  scheduling_date?: Date; // dataAgendamento
 
   @Prop({ required: false })
-  arrivalDate?: Date; // dataChegada
+  arrival_date?: Date; // dataChegada
 
   @Prop({ required: false })
-  startDate?: Date; // dataInicio
+  start_date?: Date; // dataInicio
 
   @Prop({ required: false })
-  endDate?: Date; // dataFim
+  end_date?: Date; // dataFim
 
   @Prop({ required: false })
-  waitTimeMin?: number; // tempoEsperaMin
+  wait_time_min?: number; // tempoEsperaMin
 
   @Prop({ required: false })
-  executionTimeMin?: number; // tempoExecucaoMin
+  execution_time_min?: number; // tempoExecucaoMin
 
   @Prop({ required: false })
-  stayTimeMin?: number; // tempoPermanenciaMin
+  stay_time_min?: number; // tempoPermanenciaMin
 
   @Prop({
     required: true,

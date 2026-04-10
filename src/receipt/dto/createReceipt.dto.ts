@@ -11,21 +11,21 @@ import { Supplier } from 'src/supplier/Schemas/suppliers.schema';
 export class CreateReceiptDto {
   @IsNotEmpty()
   @IsMongoId()
-  supplier_Id!: Supplier;
+  supplier_id!: Supplier;
 
   @IsOptional()
   @IsString()
-  supplierName!: string;
+  supplier_name!: string;
 
   @IsOptional()
   @IsString()
-  licensePlate!: string;
+  license_plate!: string;
 
   @IsOptional()
   @IsDateString()
-  schedulingDate?: string;
+  scheduling_date?: string;
 
   @IsOptional()
   @IsNumber()
-  invoiceWeight?: number;
+  invoice_weight?: number;
 }

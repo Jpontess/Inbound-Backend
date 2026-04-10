@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class FinishReceipt {
   @IsNotEmpty()
   @IsNumber()
-  scaleWeight!: number;
+  scale_weight!: number;
 
   @IsOptional()
   @IsString()

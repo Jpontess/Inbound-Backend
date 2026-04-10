@@ -9,10 +9,10 @@ export type SupplierDocument = HydratedDocument<Supplier>;
 })
 export class Supplier {
   @Prop({ required: true })
-  name!: string;
+  supplier_name!: string;
 
   @Prop({ required: false })
-  status!: boolean;
+  supplier_status!: boolean;
 }
 
 export const SupplierSchema = SchemaFactory.createForClass(Supplier);
