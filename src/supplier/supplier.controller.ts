@@ -13,21 +13,21 @@ import { updateSupplierDTO } from './dto/updateSupplier.dto';
 
 @Controller('supplier')
 export class SupplierController {
-  constructor(private supllierService: SupplierService) {}
+  constructor(private supplierService: SupplierService) {}
 
   @Post()
   create(@Body() supplierNew: createSupplierDTO) {
-    return this.supllierService.createSupplier(supplierNew);
+    return this.supplierService.createSupplier(supplierNew);
   }
 
   @Get()
   async listSupplier() {
-    return await this.supllierService.getListSupplier();
+    return this.supplierService.getListSupplier();
   }
 
   @Get(':id')
   async supplierById(@Param('id') id: string) {
-    return await this.supllierService.getSupplierById(id);
+    return this.supplierService.getSupplierById(id);
   }
 
   @Patch('update/:id')
@@ -35,11 +35,11 @@ export class SupplierController {
     @Param('id') id: string,
     @Body() supplierUpdate: updateSupplierDTO,
   ) {
-    return await this.supllierService.updateSupplier(id, supplierUpdate);
+    return this.supplierService.updateSupplier(id, supplierUpdate);
   }
 
   @Delete('delete/:id')
   async deleteSupplier(@Param('id') id: string) {
-    return await this.supllierService.deleteSupplier(id);
+    return this.supplierService.deleteSupplier(id);
   }
 }
