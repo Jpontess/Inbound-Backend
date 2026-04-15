@@ -17,6 +17,7 @@ export class SupplierRepository {
     private readonly supplierModel: Model<SupplierDocument>,
   ) {}
 
+  // Criar um novo fornecedor
   async create(supplierCreate: createSupplierDTO): Promise<Supplier> {
     const newSupplier = new this.supplierModel({
       ...supplierCreate,
@@ -26,7 +27,7 @@ export class SupplierRepository {
     const savedSupplier = await newSupplier.save();
     return modelToSupplier(savedSupplier);
   }
-
+  // Listar todos os fornecedores
   async findAll(): Promise<Supplier[]> {
     const suppliers = await this.supplierModel
       .find()
@@ -34,7 +35,7 @@ export class SupplierRepository {
 
     return suppliers.map((supplier) => modelToSupplier(supplier));
   }
-
+  // Buscar fornecedor por Id
   async findById(id: string): Promise<Supplier | null> {
     const supplier = await this.supplierModel
       .findById(id)
@@ -47,6 +48,7 @@ export class SupplierRepository {
     return modelToSupplier(supplier);
   }
 
+  // Atualizar um fornecedor por Id
   async updateById(
     id: string,
     supplierUpdate: updateSupplierDTO,
@@ -66,6 +68,7 @@ export class SupplierRepository {
     return modelToSupplier(supplier);
   }
 
+  // Deletar um fornecedor por Id
   async softDeleteById(id: string): Promise<Supplier | null> {
     const supplier = await this.supplierModel.findByIdAndUpdate(
       id,

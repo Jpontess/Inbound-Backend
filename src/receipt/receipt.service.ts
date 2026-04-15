@@ -1,45 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Receipt, ReceiptDocument } from './Schemas/receipt.schema';
 import { CreateReceiptDto } from './dto/createReceipt.dto';
 import { FinishReceipt } from './dto/finishReceipt.dto';
-import {
-  Supplier,
-  SupplierDocument,
-} from 'src/supplier/Schemas/suppliers.schema';
 import { UpdateReceiptDto } from './dto/updateReceipt.dto';
 import { startReceiptDto } from './dto/startReceipt.dto';
+import { Logger } from '@nestjs/common';
+import { ReceiptRepository } from './receipt.repository';
+import { SupplierRepository } from 'src/supplier/supplier.repository';
+import { CreateScheduleDto } from './dto/createSchedule.dto';
 
 @Injectable()
 export class ReceiptService {
+  private readonly logger = new Logger(ReceiptService.name);
   constructor(
-    @InjectModel(Receipt.name) private model: Model<ReceiptDocument>,
-    @InjectModel(Supplier.name) private modelSupplier: Model<SupplierDocument>,
+    private readonly receiptRepository: ReceiptRepository,
+    private readonly supplierRepository: SupplierRepository,
   ) {}
 
+  // Criar um novo recebimento
   async createReceipt(newReceiptDto: CreateReceiptDto) {
-    const supplier = await this.modelSupplier.findById(
+    const supplier = await this.supplierRepository.findById(
       newReceiptDto.supplier_id,
     );
 
-    const newReceipt = new this.model({
+    if (!supplier) {
+      this.logger.error(
+        `Supplier with ID ${newReceiptDto.supplier_id} not found`,
+      );
+      throw new Error('Supplier not found');
+    }
+
+    const newReceipt = await this.receiptRepository.create({
       ...newReceiptDto,
-      license_plate: newReceiptDto.license_plate,
       supplier_id: newReceiptDto.supplier_id,
-      supplier_name: supplier?.supplier_name,
+      license_plate: newReceiptDto.license_plate,
+      supplier_name: supplier.supplier_name,
       arrival_date: new Date(),
       status: 'Aguardando',
     });
+
+    this.logger.log(`Creating receipt for supplier ${supplier?.supplier_name}`);
     return newReceipt.save();
   }
-
-  async createSchedule(newScheduleDto: CreateReceiptDto) {
-    const supplier = await this.modelSupplier.findById(
+  // Criar um novo agendamento
+  async createSchedule(newScheduleDto: CreateScheduleDto) {
+    const supplier = await this.supplierRepository.findById(
       newScheduleDto.supplier_id,
     );
 
-    const newSchedule = new this.model({
+    const newSchedule = await this.receiptRepository.createSchedule({
       supplier_id: newScheduleDto.supplier_id,
       supplier_name: supplier?.supplier_name,
       invoice_weight: newScheduleDto.invoice_weight,
@@ -47,57 +55,58 @@ export class ReceiptService {
       status: 'Agendado',
     });
     return newSchedule.save();
+
+    this.logger.log(
+      `Creating schedule for supplier ${supplier?.supplier_name} on ${newScheduleDto.scheduling_date}`,
+    );
   }
 
+  //obter a lista de recebimentos
   async listReceipt() {
-    return await this.model.find();
+    return await this.receiptRepository.findall();
+
+    this.logger.log('Fetching all receipts');
   }
 
   // recebimento por Id
   async receiptById(id: string) {
-    return await this.model.findById(id);
+    return await this.receiptRepository.findById(id);
+
+    this.logger.log(`Fetching receipt with ID ${id}`);
   }
 
   // atualiza o recebimento
   async updateReceipt(id: string, newUpdate: UpdateReceiptDto) {
-    const receipt_id = await this.model.findByIdAndUpdate(id, newUpdate, {
-      new: true,
-    });
-    if (!receipt_id) return Error('Recebimento não encontrado');
+    const receipt_id = await this.receiptRepository.update(id, newUpdate);
+    if (!receipt_id) return Error('Receipt not found');
 
     if (receipt_id.invoice_weight! < newUpdate.scale_weight!) {
-      return await this.model.findByIdAndUpdate(
-        id,
-        { status: 'Divergencia' },
-        { new: true },
-      );
+      return await this.receiptRepository.update(id, { status: 'Divergencia' });
     } else if (
       newUpdate.scale_weight == 0 &&
       receipt_id.status === 'Agendado'
     ) {
-      return await this.model.findOneAndUpdate(
-        { _id: id },
-        { status: 'Agendado' },
-        { new: true },
-      );
+      return await this.receiptRepository.update(id, { status: 'Agendado' });
     } else if (receipt_id.invoice_weight! >= newUpdate.scale_weight!) {
-      return await this.model.findByIdAndUpdate(
-        { _id: id },
-        { status: 'Finalizado' },
-        { new: true },
-      );
+      return await this.receiptRepository.update(id, { status: 'Finalizado' });
     }
 
     return receipt_id;
+
+    this.logger.log(
+      `Updating receipt with ID ${id} with new data ${JSON.stringify(newUpdate)}`,
+    );
   }
 
   // deleta o recebimento
   async deleteReceipt(id: string) {
-    return await this.model.findByIdAndDelete(id);
-  }
+    return await this.receiptRepository.delete(id);
 
+    this.logger.log(`Deleting receipt with ID ${id}`);
+  }
+  // inicia a conferência do recebimento
   async startReceipt(id: string, startReceiptDto: startReceiptDto) {
-    const receiptDb = await this.model.findById(id);
+    const receiptDb = await this.receiptRepository.findById(id);
 
     const inicioRecebimento = new Date().getTime();
     const tempoChegada = receiptDb?.arrival_date
@@ -109,21 +118,21 @@ export class ReceiptService {
         ? Math.floor((inicioRecebimento - tempoChegada) / 60000)
         : 0;
 
-    return await this.model.findByIdAndUpdate(
-      id,
-      {
-        ...startReceiptDto,
-        status: 'Conferindo',
-        start_date: inicioRecebimento,
-        wait_time_min: tempoEspera,
-      },
-      { new: true },
+    return await this.receiptRepository.update(id, {
+      ...startReceiptDto,
+      status: 'Conferindo',
+      start_date: inicioRecebimento,
+      wait_time_min: tempoEspera,
+    });
+
+    this.logger.log(
+      `Starting receipt with ID ${id} for invoice number ${startReceiptDto.invoice_number}`,
     );
   }
 
-  // finaliza um recebimento
+  // finaliza a conferência do recebimento
   async finishReceipt(id: string, receipt: FinishReceipt) {
-    const receiptDb = await this.model.findById(id);
+    const receiptDb = await this.receiptRepository.findById(id);
 
     const recebimentoFim = new Date();
 
@@ -149,27 +158,27 @@ export class ReceiptService {
     } else {
       statusReceipt = 'Divergencia';
     }
+    return await this.receiptRepository.update(id, {
+      ...receipt,
+      status: statusReceipt,
+      end_date: recebimentoFim,
+      execution_time_min: executionTime,
+      stay_time_min: permanenceTime,
+    });
 
-    return await this.model
-      .findByIdAndUpdate(
-        id,
-        {
-          ...receipt,
-          status: statusReceipt,
-          end_date: recebimentoFim,
-          execution_time_min: executionTime,
-          stay_time_min: permanenceTime,
-        },
-        { new: true },
-      )
-      .select('-createdAt -updatedAt -__v');
+    this.logger.log(
+      `Finishing receipt with ID ${id} with status ${statusReceipt}`,
+    );
   }
 
+  // atualiza o status de aguadando para recebimento agendado pela placa
   async inputByPlate(id: string, updateReceipt: UpdateReceiptDto) {
-    return await this.model.findByIdAndUpdate(
-      id,
-      { ...updateReceipt, status: 'Aguardando', arrival_date: new Date() },
-      { new: true },
-    );
+    return await this.receiptRepository.update(id, {
+      ...updateReceipt,
+      status: 'Aguardando',
+      arrival_date: new Date(),
+    });
+
+    this.logger.log(`Updating receipt with ID ${id} to status Aguardando`);
   }
 }

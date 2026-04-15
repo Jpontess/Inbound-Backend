@@ -3,36 +3,24 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
 } from 'class-validator';
 
-export class CreateReceiptDto {
+export class CreateScheduleDto {
   @IsNotEmpty()
   @IsMongoId()
   supplier_id!: string;
 
-  @IsOptional()
   @IsString()
   supplier_name?: string;
 
-  @IsOptional()
-  @IsString()
-  license_plate!: string;
-
-  @IsOptional()
-  @IsDateString()
-  arrival_date?: Date;
-
-  @IsOptional()
-  @IsDateString()
-  scheduling_date?: string;
-
-  @IsOptional()
   @IsNumber()
   invoice_weight?: number;
 
-  @IsOptional()
+  @IsDateString()
+  scheduling_date?: string;
+
   @IsString()
+  @IsNotEmpty()
   status!: string;
 }
