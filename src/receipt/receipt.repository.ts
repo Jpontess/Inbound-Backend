@@ -32,7 +32,7 @@ export class ReceiptRepository {
   }
 
   // Listar todos os recebimentos
-  async findall() {
+  async findAll() {
     return this.ReceiptModel.find().exec();
   }
 
