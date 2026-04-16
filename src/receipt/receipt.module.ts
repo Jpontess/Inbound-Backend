@@ -7,6 +7,9 @@ import {
   Supplier,
   SupplierSchema,
 } from 'src/supplier/Schemas/suppliers.schema';
+import { ReceiptRepository } from './receipt.repository';
+import { SupplierModule } from 'src/supplier/supplier.module';
+import { SupplierRepository } from 'src/supplier/supplier.repository';
 
 @Module({
   imports: [
@@ -14,8 +17,9 @@ import {
     MongooseModule.forFeature([
       { name: Supplier.name, schema: SupplierSchema },
     ]),
+    SupplierModule,
   ],
   controllers: [ReceiptController],
-  providers: [ReceiptService],
+  providers: [ReceiptService, ReceiptRepository, SupplierRepository],
 })
 export class ReceiptModule {}

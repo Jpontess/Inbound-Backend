@@ -43,7 +43,7 @@ export class UpdateReceiptDto {
   end_date?: Date;
 
   @IsOptional()
-  start_date?: Date;
+  start_date?: number;
 
   @IsOptional()
   wait_time_min?: number;
