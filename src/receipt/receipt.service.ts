@@ -5,7 +5,7 @@ import { UpdateReceiptDto } from './dto/updateReceipt.dto';
 import { startReceiptDto } from './dto/startReceipt.dto';
 import { Logger } from '@nestjs/common';
 import { ReceiptRepository } from './receipt.repository';
-import { SupplierRepository } from 'src/supplier/supplier.repository';
+import { SupplierRepository } from '../supplier/supplier.repository';
 import { CreateScheduleDto } from './dto/createSchedule.dto';
 
 @Injectable()
@@ -54,31 +54,29 @@ export class ReceiptService {
       scheduling_date: newScheduleDto.scheduling_date,
       status: 'Agendado',
     });
-    return newSchedule.save();
 
     this.logger.log(
       `Creating schedule for supplier ${supplier?.supplier_name} on ${newScheduleDto.scheduling_date}`,
     );
+    return newSchedule.save();
   }
 
   //obter a lista de recebimentos
   async listReceipt() {
-    return await this.receiptRepository.findall();
-
     this.logger.log('Fetching all receipts');
+    return await this.receiptRepository.findAll();
   }
 
   // recebimento por Id
   async receiptById(id: string) {
-    return await this.receiptRepository.findById(id);
-
     this.logger.log(`Fetching receipt with ID ${id}`);
+    return await this.receiptRepository.findById(id);
   }
 
   // atualiza o recebimento
   async updateReceipt(id: string, newUpdate: UpdateReceiptDto) {
     const receipt_id = await this.receiptRepository.update(id, newUpdate);
-    if (!receipt_id) return Error('Receipt not found');
+    if (!receipt_id) throw new Error('Receipt not found');
 
     if (receipt_id.invoice_weight! < newUpdate.scale_weight!) {
       return await this.receiptRepository.update(id, { status: 'Divergencia' });
@@ -91,18 +89,16 @@ export class ReceiptService {
       return await this.receiptRepository.update(id, { status: 'Finalizado' });
     }
 
-    return receipt_id;
-
     this.logger.log(
       `Updating receipt with ID ${id} with new data ${JSON.stringify(newUpdate)}`,
     );
+    return receipt_id;
   }
 
   // deleta o recebimento
   async deleteReceipt(id: string) {
-    return await this.receiptRepository.delete(id);
-
     this.logger.log(`Deleting receipt with ID ${id}`);
+    return await this.receiptRepository.delete(id);
   }
   // inicia a conferência do recebimento
   async startReceipt(id: string, startReceiptDto: startReceiptDto) {
@@ -118,16 +114,15 @@ export class ReceiptService {
         ? Math.floor((inicioRecebimento - tempoChegada) / 60000)
         : 0;
 
+    this.logger.log(
+      `Starting receipt with ID ${id} for invoice number ${startReceiptDto.invoice_number}`,
+    );
     return await this.receiptRepository.update(id, {
       ...startReceiptDto,
       status: 'Conferindo',
       start_date: inicioRecebimento,
       wait_time_min: tempoEspera,
     });
-
-    this.logger.log(
-      `Starting receipt with ID ${id} for invoice number ${startReceiptDto.invoice_number}`,
-    );
   }
 
   // finaliza a conferência do recebimento
@@ -158,6 +153,9 @@ export class ReceiptService {
     } else {
       statusReceipt = 'Divergencia';
     }
+    this.logger.log(
+      `Finishing receipt with ID ${id} with status ${statusReceipt}`,
+    );
     return await this.receiptRepository.update(id, {
       ...receipt,
       status: statusReceipt,
@@ -165,20 +163,15 @@ export class ReceiptService {
       execution_time_min: executionTime,
       stay_time_min: permanenceTime,
     });
-
-    this.logger.log(
-      `Finishing receipt with ID ${id} with status ${statusReceipt}`,
-    );
   }
 
   // atualiza o status de aguadando para recebimento agendado pela placa
   async inputByPlate(id: string, updateReceipt: UpdateReceiptDto) {
+    this.logger.log(`Updating receipt with ID ${id} to status Aguardando`);
     return await this.receiptRepository.update(id, {
       ...updateReceipt,
       status: 'Aguardando',
       arrival_date: new Date(),
     });
-
-    this.logger.log(`Updating receipt with ID ${id} to status Aguardando`);
   }
 }
