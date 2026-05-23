@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CommonAuthModule } from './common/auth/auth.module';
-import { AuthenticationGuard } from './common/auth/guards/authentication.guard';
 import { ReceiptModule } from './receipt/receipt.module';
 import { SupplierModule } from './supplier/supplier.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [
@@ -16,7 +15,7 @@ import { AuthModule } from './auth/auth.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.getOrThrow<string>('MONGO_URI'),
+        uri: configService.getOrThrow<string>('MONGO_URI_DB'),
       }),
       inject: [ConfigService],
     }),
@@ -24,12 +23,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     SupplierModule,
     ReceiptModule,
-  ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthenticationGuard,
-    },
+    UserModule,
   ],
 })
 export class AppModule {}
