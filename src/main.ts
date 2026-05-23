@@ -12,6 +12,6 @@ async function bootstrap() {
       transform: true, // Transforma os tipos de acordo com as definições do DTO
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT || 3000);
 }
 void bootstrap();
